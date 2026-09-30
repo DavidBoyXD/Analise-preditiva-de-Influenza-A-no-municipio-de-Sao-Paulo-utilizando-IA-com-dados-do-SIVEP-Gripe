@@ -15,3 +15,6 @@ backend/influenza_dev.db
 
 # Artefatos de sistema
 .DS_Store
+
+# Metadados internos de orquestracao (nao fazem parte do projeto)
+.agents/
