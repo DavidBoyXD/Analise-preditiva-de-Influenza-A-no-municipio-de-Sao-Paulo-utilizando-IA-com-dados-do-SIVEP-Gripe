@@ -26,11 +26,13 @@ dev = [
     "pytest>=8.0",
     "ruff>=0.4",
     "black>=24.0",
+    "httpx>=0.28.1",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
+pythonpath = ["."]
 
 [tool.ruff]
 line-length = 100

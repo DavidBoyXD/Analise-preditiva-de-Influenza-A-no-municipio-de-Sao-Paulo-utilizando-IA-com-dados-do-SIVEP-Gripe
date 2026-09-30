@@ -9,5 +9,9 @@ __pycache__/
 # Variaveis de ambiente locais (nunca versionar credenciais)
 .env
 
+# Bancos SQLite locais de desenvolvimento/teste
+*.db
+backend/influenza_dev.db
+
 # Artefatos de sistema
 .DS_Store
