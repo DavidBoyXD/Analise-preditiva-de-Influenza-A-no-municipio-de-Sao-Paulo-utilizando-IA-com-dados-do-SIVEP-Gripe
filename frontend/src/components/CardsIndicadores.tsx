@@ -23,8 +23,10 @@ interface CardsIndicadoresProps {
   origemModelo: OrigemModelo | null;
   /** Nome do modelo, quando disponivel. */
   nomeModelo: string | null;
-  /** True quando a previsao falhou (503) e nao ha origem para exibir. */
+  /** True quando o preditor respondeu 503 (indisponibilidade planejada). */
   previsaoIndisponivel: boolean;
+  /** True quando a previsao falhou por erro NAO-503 (falha de comunicacao). */
+  erroPrevisao: boolean;
 }
 
 function Card({
@@ -53,6 +55,7 @@ export default function CardsIndicadores({
   origemModelo,
   nomeModelo,
   previsaoIndisponivel,
+  erroPrevisao,
 }: CardsIndicadoresProps) {
   const total = somarCasos(serie);
   const pico = encontrarPico(serie);
@@ -84,7 +87,11 @@ export default function CardsIndicadores({
         }
       />
       <Card rotulo="Origem da previsao">
-        {previsaoIndisponivel || origemModelo === null ? (
+        {previsaoIndisponivel ? (
+          <span className="detalhe">Preditor indisponivel (503)</span>
+        ) : erroPrevisao ? (
+          <span className="detalhe">Erro ao carregar previsao</span>
+        ) : origemModelo === null ? (
           <span className="detalhe">Previsao indisponivel</span>
         ) : (
           <>

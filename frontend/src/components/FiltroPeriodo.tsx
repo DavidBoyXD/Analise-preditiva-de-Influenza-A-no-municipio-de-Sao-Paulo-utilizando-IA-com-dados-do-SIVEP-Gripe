@@ -12,6 +12,12 @@ import { useState } from "react";
 
 import type { FiltroPeriodo as FiltroPeriodoParams } from "@/services";
 
+/** Limites de dominio validados no cliente (espelham o contrato do backend). */
+const ANO_MINIMO = 2000;
+const ANO_MAXIMO = 2100;
+const SEMANA_MINIMA = 1;
+const SEMANA_MAXIMA = 53;
+
 interface FiltroPeriodoProps {
   /** Valor atual aplicado (para inicializar os campos). */
   valorInicial?: FiltroPeriodoParams;
@@ -30,6 +36,67 @@ function paraNumero(valor: string): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
+/**
+ * Valida o dominio do filtro no cliente antes de chamar a API.
+ *
+ * Regras (espelham o contrato do backend):
+ *  - ano (quando informado) inteiro entre 2000 e 2100;
+ *  - semana (quando informada) inteiro entre 1 e 53;
+ *  - o par inicio (ano/semana) nao pode ser posterior ao par fim.
+ *
+ * Retorna a primeira mensagem de erro em PT-BR, ou `null` quando valido.
+ */
+function validarFiltro(filtro: FiltroPeriodoParams): string | null {
+  const { ano_inicio, semana_inicio, ano_fim, semana_fim } = filtro;
+
+  const anos: Array<[number | undefined, string]> = [
+    [ano_inicio, "Ano inicio"],
+    [ano_fim, "Ano fim"],
+  ];
+  for (const [ano, rotulo] of anos) {
+    if (ano === undefined) {
+      continue;
+    }
+    if (!Number.isInteger(ano) || ano < ANO_MINIMO || ano > ANO_MAXIMO) {
+      return `${rotulo} deve ser um ano inteiro entre ${ANO_MINIMO} e ${ANO_MAXIMO}.`;
+    }
+  }
+
+  const semanas: Array<[number | undefined, string]> = [
+    [semana_inicio, "Semana inicio"],
+    [semana_fim, "Semana fim"],
+  ];
+  for (const [semana, rotulo] of semanas) {
+    if (semana === undefined) {
+      continue;
+    }
+    if (
+      !Number.isInteger(semana) ||
+      semana < SEMANA_MINIMA ||
+      semana > SEMANA_MAXIMA
+    ) {
+      return `${rotulo} deve ser uma semana epidemiologica inteira entre ${SEMANA_MINIMA} e ${SEMANA_MAXIMA}.`;
+    }
+  }
+
+  // Ordem inicio <= fim, comparando por (ano, semana) quando ambos existem.
+  if (ano_inicio !== undefined && ano_fim !== undefined) {
+    if (ano_inicio > ano_fim) {
+      return "O periodo de inicio nao pode ser posterior ao periodo de fim.";
+    }
+    if (
+      ano_inicio === ano_fim &&
+      semana_inicio !== undefined &&
+      semana_fim !== undefined &&
+      semana_inicio > semana_fim
+    ) {
+      return "No mesmo ano, a semana de inicio nao pode ser posterior a semana de fim.";
+    }
+  }
+
+  return null;
+}
+
 export default function FiltroPeriodo({
   valorInicial = {},
   aoAplicar,
@@ -45,15 +112,26 @@ export default function FiltroPeriodo({
   const [semanaFim, setSemanaFim] = useState(
     valorInicial.semana_fim?.toString() ?? "",
   );
+  const [erroValidacao, setErroValidacao] = useState<string | null>(null);
 
   function aplicar(evento: React.FormEvent) {
     evento.preventDefault();
-    aoAplicar({
+    const filtro: FiltroPeriodoParams = {
       ano_inicio: paraNumero(anoInicio),
       semana_inicio: paraNumero(semanaInicio),
       ano_fim: paraNumero(anoFim),
       semana_fim: paraNumero(semanaFim),
-    });
+    };
+
+    // Validacao de dominio no cliente: bloqueia submit invalido antes da API.
+    const erro = validarFiltro(filtro);
+    if (erro !== null) {
+      setErroValidacao(erro);
+      return;
+    }
+
+    setErroValidacao(null);
+    aoAplicar(filtro);
   }
 
   function limpar() {
@@ -61,6 +139,7 @@ export default function FiltroPeriodo({
     setSemanaInicio("");
     setAnoFim("");
     setSemanaFim("");
+    setErroValidacao(null);
     aoAplicar({});
   }
 
@@ -148,6 +227,17 @@ export default function FiltroPeriodo({
           </button>
         </div>
       </div>
+
+      {erroValidacao ? (
+        <p
+          className="aviso-inline"
+          role="alert"
+          aria-live="assertive"
+          style={{ marginTop: "0.75rem" }}
+        >
+          {erroValidacao}
+        </p>
+      ) : null}
     </form>
   );
 }

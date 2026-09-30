@@ -84,7 +84,14 @@ export default function FiltroUnidade() {
         ) : (
           <div className="campo">
             <label htmlFor="filtro-unidade">Unidade</label>
-            <select id="filtro-unidade">
+            {/*
+              Mesmo quando a fonte popula NM_UN_INTE, a API ainda NAO expoe um
+              parametro de filtro por unidade em /api/dados. Para nao apresentar
+              um controle que aparenta filtrar sem filtrar, o seletor lista as
+              unidades reais (transparencia) mas permanece DESABILITADO, com nota
+              de "em breve", ate o backend oferecer o parametro correspondente.
+            */}
+            <select id="filtro-unidade" disabled aria-describedby="aviso-unidade-populada">
               <option value="">Todas as unidades</option>
               {unidadesUtilizaveis.map((u) => (
                 <option key={u.id_unidade_notificacao} value={u.id_unidade_notificacao}>
@@ -92,9 +99,15 @@ export default function FiltroUnidade() {
                 </option>
               ))}
             </select>
-            <p className="painel-subtitulo" style={{ marginTop: "0.4rem" }}>
-              Observacao: a API ainda nao expoe consulta filtrada por unidade; o
-              seletor lista as unidades reais quando a fonte as popula.
+            <p
+              id="aviso-unidade-populada"
+              className="aviso-inline"
+              style={{ marginTop: "0.6rem" }}
+            >
+              Filtro por unidade em breve: a fonte ja traz as unidades, mas a API
+              ainda nao expoe consulta filtrada por unidade. O seletor sera
+              habilitado quando o backend oferecer esse parametro; ate la o
+              prototipo trabalha no agregado do municipio de Sao Paulo.
             </p>
           </div>
         )}

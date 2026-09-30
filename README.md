@@ -13,9 +13,9 @@ matriz de rastreabilidade e referências é
 | Documento | Conteúdo |
 | --------- | -------- |
 | [`docs/documentacao_projeto.md`](docs/documentacao_projeto.md) | Documentação técnica consolidada (ABNT), rastreabilidade e referências. |
-| [`docs/requisitos.md`](docs/requisitos.md) | Requisitos funcionais (RF001–RF004) e não funcionais. |
+| [`docs/requisitos.md`](docs/requisitos.md) | Requisitos funcionais (RF001 a RF004) e não funcionais. |
 | [`docs/arquitetura_descricao.md`](docs/arquitetura_descricao.md) | Descrição da arquitetura. |
-| [`docs/plano_nuvem.md`](docs/plano_nuvem.md) | Plano de nuvem (AWS) — planejamento. |
+| [`docs/plano_nuvem.md`](docs/plano_nuvem.md) | Plano de nuvem (AWS): planejamento. |
 | [`docs/plano_seguranca.md`](docs/plano_seguranca.md) | Plano de segurança (CORS, credenciais, LGPD). |
 | [`docs/documentacao_backend.md`](docs/documentacao_backend.md) | Backend/API REST (FastAPI). |
 | [`docs/documentacao_frontend.md`](docs/documentacao_frontend.md) | Frontend/dashboard (Next.js) e integração com a API. |
@@ -26,14 +26,14 @@ matriz de rastreabilidade e referências é
 
 ## Estrutura do repositório
 
-- `data/` — base bruta preservada e artefatos tratados.
-- `scripts/` — ETL (`etl_coleta.py`, `etl_tratamento.py`) e treino (`train_model.py`).
-- `database/` — `schema.sql`, `indexes.sql`, `seed.sql`.
-- `backend/` — API REST FastAPI (camadas) e testes.
-- `frontend/` — dashboard web (Next.js + TypeScript) que consome a API REST.
-- `models/` — modelo versionado (`.joblib`).
-- `notebooks/` — experimento do modelo.
-- `docs/` — documentação técnica e acadêmica.
+- `data/`: base bruta preservada e artefatos tratados.
+- `scripts/`: ETL (`etl_coleta.py`, `etl_tratamento.py`) e treino (`train_model.py`).
+- `database/`: `schema.sql`, `indexes.sql`, `seed.sql`.
+- `backend/`: API REST FastAPI (camadas) e testes.
+- `frontend/`: dashboard web (Next.js + TypeScript) que consome a API REST.
+- `models/`: modelo versionado (`.joblib`).
+- `notebooks/`: experimento do modelo.
+- `docs/`: documentação técnica e acadêmica.
 
 ## Testes
 

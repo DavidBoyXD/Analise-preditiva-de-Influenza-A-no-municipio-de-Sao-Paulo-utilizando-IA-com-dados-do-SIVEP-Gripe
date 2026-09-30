@@ -145,7 +145,8 @@ export default function Dashboard() {
             serie={serieSegura}
             origemModelo={origemModelo}
             nomeModelo={nomeModelo}
-            previsaoIndisponivel={previsaoIndisponivel || erroPrevisao !== null}
+            previsaoIndisponivel={previsaoIndisponivel}
+            erroPrevisao={erroPrevisao !== null}
           />
         )}
       </section>

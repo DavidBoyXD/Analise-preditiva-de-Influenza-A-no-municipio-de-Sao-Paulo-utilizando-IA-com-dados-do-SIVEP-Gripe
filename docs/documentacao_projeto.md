@@ -74,7 +74,7 @@ Registradas conforme a seção 3 do Manual Interno:
 
 Construídos: **ETL** (RF003), **banco de dados** (RF003), **backend/API** (RF001,
 RF002, RF003), **modelo preditivo** (RF004) e o **frontend Next.js** (dashboard
-que consome a API real — RF001/RF002), documentado em
+que consome a API real, RF001/RF002), documentado em
 [`documentacao_frontend.md`](documentacao_frontend.md) e validado nesta fase por
 lint e build (ver seção 4.5). A **implantação em nuvem AWS** permanece como
 **fase seguinte** (documentada como planejamento em
@@ -221,7 +221,7 @@ Resumo:
   legenda distintas).
 - **Degradação elegante:** o 503 do preditor vira um estado específico
   (`PrevisaoIndisponivelError`); apenas o bloco de previsão exibe aviso, enquanto
-  histórico e cards continuam renderizando (ISO/IEC 25010 — tolerância a falhas).
+  histórico e cards continuam renderizando (ISO/IEC 25010: tolerância a falhas).
 - **Honestidade de dados:** o filtro por unidade de notificação trata a pendência
   de `NM_UN_INTE` sem inventar unidades; ressalva de protótipo acadêmico visível
   no rodapé.
@@ -351,8 +351,8 @@ Aplicados como boas práticas (não conformidade formal). Detalhes em
 | ------------- | -------------------- | ------------------------ | --------- |
 | **RF003** — coletar/processar dados | `scripts/etl_coleta.py`, `scripts/etl_tratamento.py`, `data/processed/base_tratada.csv`, `serie_temporal_semanal.csv` | 13.139 registros de SP; série contínua; 8 semanas reservadas; `backend/tests/test_etl.py` (5 testes) | Dados |
 | **RF003** — armazenar em banco relacional | `database/schema.sql`, `indexes.sql`, `seed.sql`, `docs/dicionario_banco.md`, `docs/der_banco.png` | Aplicação em PostgreSQL 16 (Docker): 0 FKs órfãs, 0 comentários faltando; compatível com SQLite | Dados |
-| **RF001** — visualizar/consultar dados | `GET /api/dados`, `GET /api/series-temporais`, `frontend/` (dashboard), `docs/documentacao_backend.md`, `docs/documentacao_frontend.md` | `backend/tests/test_api.py`: filtro válido/ inválido, envelope JSON; `cd frontend && npm run lint && npm run build` | API / Dashboard |
-| **RF002** — exibir previsões (6 semanas) | `GET /api/previsoes`, serviço de previsão, gráfico real × previsto no `frontend/` | 6 semanas retornadas; falha isolada em 503; degradação elegante no dashboard; teste de previsão + build do frontend | API / Modelo / Dashboard |
+| **RF001** visualizar/consultar dados | `GET /api/dados`, `GET /api/series-temporais`, `frontend/` (dashboard), `docs/documentacao_backend.md`, `docs/documentacao_frontend.md` | `backend/tests/test_api.py`: filtro válido/ inválido, envelope JSON; `cd frontend && npm run lint && npm run build` | API / Dashboard |
+| **RF002** exibir previsões (6 semanas) | `GET /api/previsoes`, serviço de previsão, gráfico real × previsto no `frontend/` | 6 semanas retornadas; falha isolada em 503; degradação elegante no dashboard; teste de previsão + build do frontend | API / Modelo / Dashboard |
 | **RF004** — treinar/executar o modelo | `scripts/train_model.py`, `models/modelo_rf_v1.joblib`, `docs/grafico_real_x_previsto.png`, `docs/metricas_modelos.md`, `metrica_modelo`/`modelo_preditivo` | Métricas MAE/RMSE/MAPE/acerto; DM/Wilcoxon; `backend/tests/test_model.py` (15 testes) | Modelo |
 | **RF004** — registrar métricas (rastreabilidade) | `GET /api/metricas`, `metrica_modelo` no banco | `/api/metricas` reflete as métricas reais; teste de métricas | Modelo |
 | Objetivo: qualidade de dados documentada | `docs/relatorio_qualidade_dados.md` | Amarração ISO/IEC 25012 (exatidão/completude/consistência/atualidade) | Dados |
@@ -452,10 +452,10 @@ fonte interna; documentações técnicas e normas são citadas com o link de ace
   [https://fastapi.tiangolo.com/](https://fastapi.tiangolo.com/). Acesso em:
   30 set. 2026. — *(API REST, RF001/RF002/RF003)*
 - VERCEL. **Next.js documentation**. Disponível em:
-  [https://nextjs.org/docs](https://nextjs.org/docs). Acesso em: 30 set. 2026. —
+  [https://nextjs.org/docs](https://nextjs.org/docs). Acesso em: 30 set. 2026.
   *(frontend/dashboard, RF001/RF002)*
 - RECHARTS. **Recharts documentation**. Disponível em:
-  [https://recharts.org](https://recharts.org). Acesso em: 30 set. 2026. —
+  [https://recharts.org](https://recharts.org). Acesso em: 30 set. 2026.
   *(gráficos do dashboard)*
 - SCIKIT-LEARN DEVELOPERS. **RandomForestRegressor**. Disponível em:
   [https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html).

@@ -25,7 +25,7 @@ vigilancia epidemiologica.
 
 | Requisito | Cobertura no frontend |
 | --------- | --------------------- |
-| **RF001** (consultar/visualizar dados) | Filtro por periodo (ano/semana epidemiologica), cards de indicadores, grafico de linha (serie historica) e grafico de barras, todos consumindo `/api/dados`. |
+| **RF001** (consultar/visualizar dados) | Filtro por periodo (ano/semana epidemiologica, com validacao de dominio no cliente), cards de indicadores, grafico de linha (serie historica) e grafico de barras, todos consumindo `/api/dados`. |
 | **RF002** (exibir previsoes de 6 semanas) | Grafico de comparacao real x previsto consumindo `/api/previsoes`, com a previsao **visualmente separada** do dado real e degradacao elegante no caso 503. |
 
 A granularidade de consulta prevista para unidade de notificacao (`NM_UN_INTE`)
@@ -64,7 +64,7 @@ camada de servicos desempacota antes de entregar a UI.
 | ---------------- | ------------------ | ----------------- |
 | Filtro de periodo -> serie historica | `GET /api/dados` (`ano_inicio`, `semana_inicio`, `ano_fim`, `semana_fim`) | `getDados()` |
 | Grafico de linha (serie semanal) | `GET /api/dados` no periodo filtrado | `getDados()` |
-| Grafico de barras (casos-proxy por semana) | `GET /api/dados` no periodo filtrado | `getDados()` |
+| Grafico de barras (casos-proxy por ano epidemiologico) | `GET /api/dados` no periodo filtrado (agregado por ano) | `getDados()` |
 | Cards de indicadores (total, pico, ultima semana consolidada, origem do modelo) | `GET /api/dados` (+ origem da previsao) | `getDados()` / `getPrevisoes()` |
 | Grafico real x previsto | `GET /api/previsoes` (`horizonte`, padrao 6) | `getPrevisoes()` |
 | Painel de metricas do modelo | `GET /api/metricas` | `getMetricas()` |
@@ -85,14 +85,26 @@ reutilizados via `EstadoUI` (`Carregando`, `Erro`, `Vazio`):
 - **Erro:** mensagem clara, sem stack trace, com opcao de "tentar novamente".
 - **Vazio:** mensagem quando a lista retorna sem registros.
 
+O filtro por periodo ainda **valida o dominio no cliente antes de chamar a API**:
+ano inteiro entre 2000 e 2100, semana epidemiologica entre 1 e 53 e coerencia
+inicio <= fim (comparando ano e semana). Um valor invalido bloqueia o envio do
+formulario e exibe uma mensagem clara em Portugues-Brasil (`role="alert"`), sem
+delegar ao servidor um erro que a UI so mostraria de forma generica.
+
 A **degradacao elegante** do modulo preditivo (RF002; ISO/IEC 25010 -
 Confiabilidade/Tolerancia a falhas) e o ponto central: o backend isola a
 indisponibilidade do preditor em **HTTP 503** (`PrevisaoIndisponivel`) sem
 derrubar os endpoints de dados. No frontend, `getPrevisoes()` traduz o 503 no
 erro tipado `PrevisaoIndisponivelError`, distinto de uma falha geral. Quando ele
 ocorre, apenas o bloco de comparacao real x previsto e o card de origem do modelo
-exibem o aviso "Previsao temporariamente indisponivel"; o grafico de linha, o
-grafico de barras e os cards de historico continuam renderizando normalmente.
+exibem o aviso; o grafico de linha, o grafico de barras e os cards de historico
+continuam renderizando normalmente.
+
+O card de origem do modelo **distingue** as duas situacoes, em vez de mostrar a
+mesma mensagem: "Preditor indisponivel (503)" para a indisponibilidade planejada
+(`PrevisaoIndisponivelError`) e "Erro ao carregar previsao" para uma falha de
+comunicacao nao-503. Assim a interface preserva a diferenca entre "preditor fora
+do ar por projeto" e "erro de comunicacao".
 
 ## 6. Tratamento honesto da pendência de NM_UN_INTE
 
@@ -105,9 +117,15 @@ disso, a UI:
 - **nao inventa nem fabrica unidades**;
 - exibe uma mensagem clara do tipo "Filtro por unidade indisponivel: a fonte de
   dados atual nao populou NM_UN_INTE (pendencia documentada)";
-- mantem o seletor **desabilitado** enquanto a fonte nao trouxer unidades reais;
-- volta a listar automaticamente as unidades caso a fonte passe a popular o campo
-  no futuro (`fonte_populada = true`).
+- mantem o seletor **desabilitado** enquanto a fonte nao trouxer unidades reais.
+
+Importante: mesmo no cenario futuro em que a fonte popule `NM_UN_INTE`
+(`fonte_populada = true`), o seletor passa a **listar** as unidades reais por
+transparencia, mas continua **desabilitado**, com nota de "em breve". Isso evita
+apresentar um controle que aparenta filtrar sem filtrar, ja que a API ainda nao
+expoe um parametro de filtro por unidade em `/api/dados`. O seletor so sera
+habilitado (com o estado selecionado sendo levado a consulta) quando o backend
+oferecer esse parametro.
 
 ## 7. Separação visual real x previsto
 
