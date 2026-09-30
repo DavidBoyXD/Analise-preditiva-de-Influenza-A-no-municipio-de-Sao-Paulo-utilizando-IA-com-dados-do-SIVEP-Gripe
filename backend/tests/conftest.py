@@ -18,6 +18,29 @@ from sqlalchemy.pool import StaticPool
 
 
 @pytest.fixture
+def preditor_treinado():
+    """Treina um PreditorRandomForest pequeno para os testes do modelo (RF004).
+
+    Usa uma serie sintetica sazonal curta e poucas arvores para manter o teste
+    rapido; o objetivo e validar o FORMATO e o contrato da previsao, nao a
+    acuracia.
+    """
+    import math
+
+    from sklearn.ensemble import RandomForestRegressor
+
+    from app.model import CONFIG_ATRIBUTOS_PADRAO, PreditorRandomForest
+    from app.model.features import gerar_atributos_serie
+
+    valores = [20.0 + 15.0 * math.sin(2 * math.pi * (s % 52) / 52) for s in range(120)]
+    semanas = [((s) % 52) + 1 for s in range(120)]
+    X, y, _ = gerar_atributos_serie(valores, semanas, CONFIG_ATRIBUTOS_PADRAO)
+    modelo = RandomForestRegressor(n_estimators=20, random_state=0)
+    modelo.fit(X, y)
+    return PreditorRandomForest(modelo=modelo, config=CONFIG_ATRIBUTOS_PADRAO)
+
+
+@pytest.fixture
 def engine_teste():
     """Cria um engine SQLite em memoria compartilhado entre conexoes."""
     engine = create_engine(
@@ -50,7 +73,9 @@ def app_e_dados(engine_teste):
     )
 
     Base.metadata.create_all(bind=engine_teste)
-    SessionTeste = sessionmaker(bind=engine_teste, autoflush=False, autocommit=False, future=True)
+    SessionTeste = sessionmaker(
+        bind=engine_teste, autoflush=False, autocommit=False, future=True
+    )
 
     dados_ref = {"total_pontos": 0, "reservadas": 3}
 
@@ -155,7 +180,9 @@ def app_vazia(engine_teste):
     from app.main import app
 
     Base.metadata.create_all(bind=engine_teste)
-    SessionTeste = sessionmaker(bind=engine_teste, autoflush=False, autocommit=False, future=True)
+    SessionTeste = sessionmaker(
+        bind=engine_teste, autoflush=False, autocommit=False, future=True
+    )
 
     def _get_db_teste():
         db = SessionTeste()

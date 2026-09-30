@@ -1694,3 +1694,12 @@ INSERT INTO serie_temporal (id_serie_temporal, id_semana_epidemiologica, id_unid
     (830, 830, 1, 0, TRUE, FALSE),
     (831, 831, 1, 0, TRUE, FALSE),
     (832, 832, 1, 0, TRUE, FALSE);
+
+-- >>> INICIO BLOCO MODELO PREDITIVO (gerado por scripts/train_model.py)
+-- Modelo principal (RF004) e suas metricas reais obtidas sob walk-forward.
+-- Metricas honestas: ver docs/documentacao_modelo.md.
+INSERT INTO modelo_preditivo (id_modelo, nome_modelo, algoritmo, versao, caminho_modelo_serializado, janela_historica_semanas, horizonte_previsao_semanas, data_treinamento, status_modelo, ativo, observacao) VALUES
+    (1, 'random_forest', 'RandomForestRegressor (scikit-learn) com atributos temporais', '1', 'models/modelo_rf_v1.joblib', 5, 6, CURRENT_TIMESTAMP, 'ativo', TRUE, 'Modelo principal do TCC (RF004) - metricas reais sob walk-forward de 6 semanas.');
+INSERT INTO metrica_modelo (id_metrica, id_modelo, mae, rmse, mape, acerto_direcional, teste_significancia, estatistica_teste, p_valor, significativo, base_teste_inicio, base_teste_fim, observacao) VALUES
+    (1, 1, 8.5628, 25.4827, 123.8018, 0.5308, 'Diebold-Mariano (RF vs baseline)', 0.656516, 0.511690, FALSE, '2009-01-01', '2026-12-28', 'sMAPE=37.51%; MAPE apenas em semanas com real>0 (242 semanas de zero ignoradas).');
+-- <<< FIM BLOCO MODELO PREDITIVO
