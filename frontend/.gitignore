@@ -1,0 +1,25 @@
+# dependencias
+/node_modules
+/.pnp
+.pnp.*
+
+# build / saida do Next.js
+/.next/
+/out/
+/build
+next-env.d.ts
+
+# testes / cobertura
+/coverage
+
+# variaveis de ambiente locais (nunca versionar segredos)
+.env*.local
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# sistema operacional / editores
+.DS_Store
+*.pem

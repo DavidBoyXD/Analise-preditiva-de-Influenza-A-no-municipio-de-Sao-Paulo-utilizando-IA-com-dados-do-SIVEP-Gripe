@@ -1,0 +1,119 @@
+erDiagram
+%% Diagrama Entidade-Relacionamento (DER) - Banco relacional do sistema de
+%% analise preditiva de Influenza A no municipio de Sao Paulo (RF003).
+%% Fonte de verdade do modelo fisico: database/schema.sql
+%% Documentacao: docs/dicionario_banco.md
+%% Gerar imagem: mmdc -i docs/der_banco.mmd -o docs/der_banco.png
+%%   (npm i -g @mermaid-js/mermaid-cli) ou colar em https://mermaid.live
+%% Cardinalidade: ||--o{ = 1 : N (um para muitos, lado N opcional).
+    fonte_dados ||--o{ arquivo_dados : "possui"
+    arquivo_dados ||--o{ registro_epidemiologico : "origina"
+    arquivo_dados ||--o{ log_processamento : "gera"
+    semana_epidemiologica ||--o{ registro_epidemiologico : "referencia"
+    semana_epidemiologica ||--o{ serie_temporal : "referencia"
+    unidade_notificacao ||--o{ registro_epidemiologico : "localiza"
+    unidade_notificacao ||--o{ serie_temporal : "localiza"
+    modelo_preditivo ||--o{ metrica_modelo : "avaliado_por"
+    modelo_preditivo ||--o{ log_processamento : "gera"
+
+    fonte_dados {
+        INTEGER id_fonte_dados PK
+        VARCHAR nome_fonte UK
+        TEXT descricao
+        VARCHAR url_fonte
+        TIMESTAMP data_inclusao
+    }
+
+    arquivo_dados {
+        INTEGER id_arquivo_dados PK
+        INTEGER id_fonte_dados FK
+        VARCHAR nome_arquivo
+        VARCHAR formato_arquivo
+        VARCHAR tipo_arquivo
+        SMALLINT ano_referencia_inicio
+        SMALLINT ano_referencia_fim
+        TEXT caminho_origem
+        TEXT caminho_armazenamento
+        INTEGER quantidade_registros
+        TIMESTAMP data_importacao
+        VARCHAR status_arquivo
+    }
+
+    unidade_notificacao {
+        INTEGER id_unidade_notificacao PK
+        VARCHAR nm_un_inte "NULL na fonte atual"
+        VARCHAR co_mun_res
+        VARCHAR nome_municipio
+        VARCHAR sg_uf
+        BOOLEAN fonte_populada
+    }
+
+    semana_epidemiologica {
+        INTEGER id_semana_epidemiologica PK
+        SMALLINT ano_epidemiologico
+        SMALLINT numero_semana
+        DATE data_inicio
+        DATE data_fim
+    }
+
+    registro_epidemiologico {
+        INTEGER id_registro PK
+        INTEGER id_arquivo_dados FK
+        INTEGER id_semana_epidemiologica FK
+        INTEGER id_unidade_notificacao FK
+        INTEGER quantidade_casos_proxy
+        INTEGER quantidade_registros
+        DATE data_referencia
+    }
+
+    serie_temporal {
+        INTEGER id_serie_temporal PK
+        INTEGER id_semana_epidemiologica FK
+        INTEGER id_unidade_notificacao FK
+        INTEGER casos_proxy
+        BOOLEAN reservada_atraso_notificacao
+        BOOLEAN usar_no_treino
+    }
+
+    modelo_preditivo {
+        INTEGER id_modelo PK
+        VARCHAR nome_modelo
+        VARCHAR algoritmo
+        VARCHAR versao
+        TEXT caminho_modelo_serializado
+        SMALLINT janela_historica_semanas
+        SMALLINT horizonte_previsao_semanas
+        TIMESTAMP data_treinamento
+        VARCHAR status_modelo
+        BOOLEAN ativo
+        TEXT observacao
+    }
+
+    metrica_modelo {
+        INTEGER id_metrica PK
+        INTEGER id_modelo FK
+        DECIMAL mae
+        DECIMAL rmse
+        DECIMAL mape
+        DECIMAL acerto_direcional
+        VARCHAR teste_significancia
+        DECIMAL estatistica_teste
+        DECIMAL p_valor
+        BOOLEAN significativo
+        TIMESTAMP data_avaliacao
+        DATE base_teste_inicio
+        DATE base_teste_fim
+        TEXT observacao
+    }
+
+    log_processamento {
+        INTEGER id_log PK
+        INTEGER id_arquivo_dados FK "opcional"
+        INTEGER id_modelo FK "opcional"
+        TIMESTAMP data_hora
+        VARCHAR tipo_evento
+        VARCHAR origem
+        TEXT mensagem
+        TEXT stack_trace
+        VARCHAR status
+    }
