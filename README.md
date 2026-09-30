@@ -18,6 +18,7 @@ matriz de rastreabilidade e referências é
 | [`docs/plano_nuvem.md`](docs/plano_nuvem.md) | Plano de nuvem (AWS) — planejamento. |
 | [`docs/plano_seguranca.md`](docs/plano_seguranca.md) | Plano de segurança (CORS, credenciais, LGPD). |
 | [`docs/documentacao_backend.md`](docs/documentacao_backend.md) | Backend/API REST (FastAPI). |
+| [`docs/documentacao_frontend.md`](docs/documentacao_frontend.md) | Frontend/dashboard (Next.js) e integração com a API. |
 | [`docs/documentacao_modelo.md`](docs/documentacao_modelo.md) | Modelo preditivo (Random Forest). |
 | [`docs/dicionario_banco.md`](docs/dicionario_banco.md) | Dicionário do banco de dados e DER. |
 | [`docs/dicionario_dados.md`](docs/dicionario_dados.md) | Dicionário de dados e ficha de rastreabilidade. |
@@ -29,6 +30,7 @@ matriz de rastreabilidade e referências é
 - `scripts/` — ETL (`etl_coleta.py`, `etl_tratamento.py`) e treino (`train_model.py`).
 - `database/` — `schema.sql`, `indexes.sql`, `seed.sql`.
 - `backend/` — API REST FastAPI (camadas) e testes.
+- `frontend/` — dashboard web (Next.js + TypeScript) que consome a API REST.
 - `models/` — modelo versionado (`.joblib`).
 - `notebooks/` — experimento do modelo.
 - `docs/` — documentação técnica e acadêmica.

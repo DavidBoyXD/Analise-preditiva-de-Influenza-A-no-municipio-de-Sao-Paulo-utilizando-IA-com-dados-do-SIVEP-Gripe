@@ -23,7 +23,7 @@ São Paulo, 2026.
 1. Apresentação e escopo
 2. Coleta e tratamento de dados (ETL)
 3. Banco de dados
-4. Backend / API REST
+4. Backend / API REST (inclui 4.5 Frontend / Dashboard)
 5. Modelo preditivo
 6. Qualidade e segurança (ISO/IEC 25010/25012/25059/27002)
 7. Limitações e trabalhos futuros
@@ -36,6 +36,7 @@ Anexos ao documento: matriz de rastreabilidade (seção 6.6) e mapeamento de KPI
 [`plano_nuvem.md`](plano_nuvem.md),
 [`plano_seguranca.md`](plano_seguranca.md),
 [`documentacao_backend.md`](documentacao_backend.md),
+[`documentacao_frontend.md`](documentacao_frontend.md),
 [`documentacao_modelo.md`](documentacao_modelo.md),
 [`dicionario_banco.md`](dicionario_banco.md),
 [`dicionario_dados.md`](dicionario_dados.md),
@@ -51,8 +52,8 @@ Anexos ao documento: matriz de rastreabilidade (seção 6.6) e mapeamento de KPI
 Desenvolver um protótipo web para análise temporal e preditiva de casos de
 Influenza A (SRAG) no **município de São Paulo**, a partir de dados públicos do
 SIVEP-Gripe/SINAN (DATASUS): coletar, tratar, armazenar, analisar e disponibilizar
-dados históricos e estimativas futuras via API REST, com dashboard previsto para a
-fase seguinte.
+dados históricos e estimativas futuras via API REST, com dashboard web (Next.js)
+para consulta e visualização.
 
 ### 1.2 Delimitações obrigatórias
 
@@ -72,9 +73,12 @@ Registradas conforme a seção 3 do Manual Interno:
 ### 1.3 Escopo desta entrega
 
 Construídos: **ETL** (RF003), **banco de dados** (RF003), **backend/API** (RF001,
-RF002, RF003) e **modelo preditivo** (RF004). O **frontend Next.js** e a
-**implantação em nuvem AWS** são **fase seguinte** (documentados como planejamento
-em [`arquitetura_descricao.md`](arquitetura_descricao.md),
+RF002, RF003), **modelo preditivo** (RF004) e o **frontend Next.js** (dashboard
+que consome a API real — RF001/RF002), documentado em
+[`documentacao_frontend.md`](documentacao_frontend.md) e validado nesta fase por
+lint e build (ver seção 4.5). A **implantação em nuvem AWS** permanece como
+**fase seguinte** (documentada como planejamento em
+[`arquitetura_descricao.md`](arquitetura_descricao.md),
 [`plano_nuvem.md`](plano_nuvem.md) e [`plano_seguranca.md`](plano_seguranca.md)).
 
 ---
@@ -201,6 +205,32 @@ Documentação interativa OpenAPI/Swagger em `/docs`.
 Nenhuma credencial no código; `.env.example` sem segredos; `.env` no `.gitignore`.
 Detalhes em [`plano_seguranca.md`](plano_seguranca.md).
 
+### 4.5 Frontend / Dashboard (Next.js)
+
+Detalhamento completo em [`documentacao_frontend.md`](documentacao_frontend.md).
+Resumo:
+
+- **Stack:** Next.js (App Router) + TypeScript em `frontend/`, com gráficos em
+  Recharts. Consome os seis endpoints da API por meio da camada de serviços
+  tipada (`src/services/api.ts`), lendo a base de `NEXT_PUBLIC_API_URL`.
+- **RF001:** filtro por período (ano/semana epidemiológica), cards de
+  indicadores, gráfico de linha da série histórica e gráfico de barras, todos a
+  partir de `/api/dados`.
+- **RF002:** gráfico de comparação **real × previsto** consumindo `/api/previsoes`,
+  com a previsão **visualmente separada** do dado real (linha tracejada, cor e
+  legenda distintas).
+- **Degradação elegante:** o 503 do preditor vira um estado específico
+  (`PrevisaoIndisponivelError`); apenas o bloco de previsão exibe aviso, enquanto
+  histórico e cards continuam renderizando (ISO/IEC 25010 — tolerância a falhas).
+- **Honestidade de dados:** o filtro por unidade de notificação trata a pendência
+  de `NM_UN_INTE` sem inventar unidades; ressalva de protótipo acadêmico visível
+  no rodapé.
+- **Validação nesta fase:** `cd frontend && npm run lint && npm run build`
+  concluem sem erros (lint sem avisos; build compila e gera a rota do dashboard).
+  A integração ponta a ponta com dados reais depende de um banco populado; sem
+  dados, a camada de serviços aponta ao contrato real e os estados de
+  carregamento/erro/vazio permanecem exercitáveis.
+
 ---
 
 ## 5. Modelo preditivo
@@ -260,7 +290,7 @@ segurança da informação).
 | Adequação funcional | RF001–RF004 cobrem os objetivos; endpoints retornam os dados filtrados. | Matriz de rastreabilidade (6.6); Pytest |
 | Eficiência de desempenho | Tempo de resposta dos endpoints; carga do modelo em memória. | Medição de tempo; meta ≤ 2 s em teste |
 | Compatibilidade | JSON padronizado e reaproveitável. | Validação de contrato/schema |
-| Capacidade de interação | Mensagens de erro claras (dashboard futuro cobre o restante). | Revisão de mensagens/UX (futuro) |
+| Capacidade de interação | Mensagens de erro claras na API e no dashboard (estados de carregamento/erro/vazio). | Revisão de mensagens/UX; lint/build do frontend |
 | Confiabilidade (tolerância a falhas) | Falha do preditor não interrompe RF001 (503 isolado). | Teste de cenário de falha |
 | Segurança | Credenciais fora do código; acesso administrativo planejado. | Revisão do `.env.example`; 27002 |
 | Manutenibilidade | Camadas separadas; modelo isolado; logs analisáveis. | Revisão de arquitetura/código |
@@ -285,7 +315,7 @@ segurança da informação).
 | Adaptabilidade funcional | Concept drift (mudança do padrão sazonal); retreinamento periódico. | Pendência declarada |
 | Correção funcional (com ressalva) | MAE/RMSE/MAPE lidos como magnitude de erro, não critério binário. | Declarado na seção 5 |
 | Robustez | Séries de consulta dominadas por zeros — cuidado de comunicação ao usuário. | Tratado no ETL/modelo |
-| Transparência | Explicabilidade mínima (importância de variáveis do Random Forest). | Prevista no dashboard futuro |
+| Transparência | Origem do modelo (treinado/baseline) e métricas exibidas no dashboard; importância de variáveis prevista como evolução. | Painel de métricas do frontend; parcial |
 | Controlabilidade | Sistema é somente leitura para previsões. | Declarado como limitação de escopo |
 
 ### 6.4 ISO/IEC 27002:2022 — Controles de segurança
@@ -311,7 +341,7 @@ Aplicados como boas práticas (não conformidade formal). Detalhes em
 | API | Endpoints com JSON padronizado; tratamento de erro; resposta ≤ 2 s em teste. | Atendido (contrato + erros; meta de tempo). |
 | Modelo | Comparação com baseline; MAE/RMSE/MAPE; gráfico real × previsto; métricas no banco. | Atendido (baseline+SARIMA+Prophet; DM/Wilcoxon). |
 | Nuvem | API em EC2; banco em RDS; arquivos em S3; segredos fora do código. | Planejado (segredos já fora do código). |
-| Dashboard | Filtros por período/unidade; gráficos dinâmicos; responsividade. | Fase futura (contrato de API pronto). |
+| Dashboard | Filtros por período/unidade; gráficos dinâmicos; responsividade. | Atendido (dashboard Next.js consumindo a API; lint/build validados). Filtro por unidade condicionado à pendência de NM_UN_INTE. |
 
 ---
 
@@ -321,8 +351,8 @@ Aplicados como boas práticas (não conformidade formal). Detalhes em
 | ------------- | -------------------- | ------------------------ | --------- |
 | **RF003** — coletar/processar dados | `scripts/etl_coleta.py`, `scripts/etl_tratamento.py`, `data/processed/base_tratada.csv`, `serie_temporal_semanal.csv` | 13.139 registros de SP; série contínua; 8 semanas reservadas; `backend/tests/test_etl.py` (5 testes) | Dados |
 | **RF003** — armazenar em banco relacional | `database/schema.sql`, `indexes.sql`, `seed.sql`, `docs/dicionario_banco.md`, `docs/der_banco.png` | Aplicação em PostgreSQL 16 (Docker): 0 FKs órfãs, 0 comentários faltando; compatível com SQLite | Dados |
-| **RF001** — visualizar/consultar dados | `GET /api/dados`, `GET /api/series-temporais`, `docs/documentacao_backend.md` | `backend/tests/test_api.py`: filtro válido/ inválido, envelope JSON | API / Dashboard |
-| **RF002** — exibir previsões (6 semanas) | `GET /api/previsoes`, serviço de previsão | 6 semanas retornadas; falha isolada em 503; teste de previsão | API / Modelo |
+| **RF001** — visualizar/consultar dados | `GET /api/dados`, `GET /api/series-temporais`, `frontend/` (dashboard), `docs/documentacao_backend.md`, `docs/documentacao_frontend.md` | `backend/tests/test_api.py`: filtro válido/ inválido, envelope JSON; `cd frontend && npm run lint && npm run build` | API / Dashboard |
+| **RF002** — exibir previsões (6 semanas) | `GET /api/previsoes`, serviço de previsão, gráfico real × previsto no `frontend/` | 6 semanas retornadas; falha isolada em 503; degradação elegante no dashboard; teste de previsão + build do frontend | API / Modelo / Dashboard |
 | **RF004** — treinar/executar o modelo | `scripts/train_model.py`, `models/modelo_rf_v1.joblib`, `docs/grafico_real_x_previsto.png`, `docs/metricas_modelos.md`, `metrica_modelo`/`modelo_preditivo` | Métricas MAE/RMSE/MAPE/acerto; DM/Wilcoxon; `backend/tests/test_model.py` (15 testes) | Modelo |
 | **RF004** — registrar métricas (rastreabilidade) | `GET /api/metricas`, `metrica_modelo` no banco | `/api/metricas` reflete as métricas reais; teste de métricas | Modelo |
 | Objetivo: qualidade de dados documentada | `docs/relatorio_qualidade_dados.md` | Amarração ISO/IEC 25012 (exatidão/completude/consistência/atualidade) | Dados |
@@ -343,14 +373,19 @@ Evidências de teste globais: `cd backend && uv run pytest -q` = **32 testes**
 - **Série curta e esparsa** com hiato 2020–2021 e muitas semanas de zero casos.
 - **Subnotificação e atraso de notificação** (reserva das 8 semanas recentes).
 - **Modelo sem superioridade comprovada:** ver seção 5.1.
-- **NM_UN_INTE não populado** pela fonte (granularidade sempre municipal).
-- **Nuvem e frontend não provisionados** neste ambiente (planejamento documentado).
+- **NM_UN_INTE não populado** pela fonte (granularidade sempre municipal); o
+  filtro por unidade no dashboard trata a pendência sem inventar unidades.
+- **Frontend validado por lint/build**, mas a integração ponta a ponta com dados
+  reais depende de um banco populado (não exercitada neste ambiente).
+- **Nuvem não provisionada** neste ambiente (planejamento documentado).
 
 ### 7.2 Trabalhos futuros
 
-- **Frontend Next.js:** dashboard com filtros por período e unidade de notificação,
-  cards, gráficos e comparação real × previsto, com previsão **visualmente
-  separada** do dado real (RF001/RF002; ISO/IEC 25059).
+- **Frontend Next.js (evolução):** o dashboard com filtros, cards, gráficos e
+  comparação real × previsto já foi implementado nesta fase
+  ([`documentacao_frontend.md`](documentacao_frontend.md)); a evolução prevista
+  inclui a integração com um banco populado (dados reais ponta a ponta),
+  explicabilidade (importância de variáveis) e testes automatizados de interface.
 - **Implantação AWS:** EC2 (API), RDS (PostgreSQL), S3 (backup/artefatos), CORS
   restrito, HTTPS, criptografia em repouso, backup testado (ver
   [`plano_nuvem.md`](plano_nuvem.md) e [`plano_seguranca.md`](plano_seguranca.md)).
@@ -416,6 +451,12 @@ fonte interna; documentações técnicas e normas são citadas com o link de ace
 - TIANGOLO, Sebastián. **FastAPI documentation**. Disponível em:
   [https://fastapi.tiangolo.com/](https://fastapi.tiangolo.com/). Acesso em:
   30 set. 2026. — *(API REST, RF001/RF002/RF003)*
+- VERCEL. **Next.js documentation**. Disponível em:
+  [https://nextjs.org/docs](https://nextjs.org/docs). Acesso em: 30 set. 2026. —
+  *(frontend/dashboard, RF001/RF002)*
+- RECHARTS. **Recharts documentation**. Disponível em:
+  [https://recharts.org](https://recharts.org). Acesso em: 30 set. 2026. —
+  *(gráficos do dashboard)*
 - SCIKIT-LEARN DEVELOPERS. **RandomForestRegressor**. Disponível em:
   [https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html).
   Acesso em: 30 set. 2026. — *(modelo principal, RF004)*
