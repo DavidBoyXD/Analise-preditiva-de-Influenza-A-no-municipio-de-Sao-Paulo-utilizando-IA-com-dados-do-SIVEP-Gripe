@@ -205,6 +205,8 @@ Esta subseção descreve o método da análise exploratória complementar, repos
 
 **Enquadramento de proteção de dados (LGPD e ISO/IEC 25012, Confidencialidade).** O recorte geográfico vem exclusivamente do endereço público do hospital (CNES), nunca do paciente. A saída é sempre agregada por semana epidemiológica mais distrito-do-hospital, sem nenhuma linha que represente um indivíduo. Nenhum dado individual identificável é produzido. O atendimento ao atributo de Confidencialidade decorre justamente de o dado sensível de localização individual nunca entrar no pipeline.
 
+**Procedência dos números (análise isolada e não versionada).** Os valores reportados nesta subseção e na seção 5.3 provêm de uma investigação exploratória conduzida de forma deliberadamente isolada, em pasta externa ao repositório e não versionada, registrada em relatórios internos (RELATORIO_VIABILIDADE_PONTE.md, RELATORIO_COBERTURA.md e FICHA_RASTREABILIDADE.md). Essa investigação apoiou-se apenas em fontes públicas: os microdados de SRAG do openDATASUS referentes a 2024, o cadastro público de estabelecimentos CNES e as camadas territoriais do GeoSampa obtidas via WFS, todas com extração datada de outubro de 2026. Pela natureza exploratória e isolada da investigação, esses números não estão amarrados a um artefato versionado no repositório, diferentemente das métricas do modelo preditivo, cuja fonte (`docs/metricas_modelos.md`) é versionada e conferível. A reprodução a escala total, cobrindo todos os anos do período, é tratada como trabalho futuro, e a ponte permanece prova de conceito validada somente em 2024.
+
 ---
 
 ## 5 Resultados
@@ -233,6 +235,8 @@ O teste de Diebold-Mariano do Random Forest frente a cada comparador resultou em
 ### 5.3 Resultados da análise exploratória da ponte por distrito (2024)
 
 A prova de conceito foi aplicada ao ano de 2024, que traz o campo NM_UN_INTE preenchido. Dos 18.574 casos notificados na capital, 90,0% foram resolvidos a um distrito (86,9% por ponto, via point-in-polygon, mais 3,1% por fallback de bairro); 10,0% não foram mapeados e foram tratados de forma fail-closed (não atribuídos). A Tabela 3 lista os distritos com mais casos no ano.
+
+Convém distinguir os dois percentuais citados, pois têm denominadores diferentes. O match exato de 94,6% da seção 4.9 refere-se a NOMES DISTINTOS de unidade de internação (148 nomes distintos casados contra o CNES). Já os 90,0% aqui reportados referem-se à cobertura de CASOS resolvidos a um distrito, ponderada pelo volume de notificações de 2024. Em resumo, 94,6% mede acerto sobre nomes distintos de unidade, enquanto 90,0% mede a fração de casos efetivamente localizados; são métricas distintas e não devem ser somadas nem comparadas diretamente.
 
 **Tabela 3: Distritos com mais casos resolvidos em 2024 (recorte por hospital notificante).**
 
