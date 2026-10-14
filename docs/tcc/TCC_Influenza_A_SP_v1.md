@@ -3,6 +3,8 @@
 > **Natureza deste documento.** Material de apoio redigido como base para integração ao TC2 do grupo. Documento NOVO e separado: não substitui o trabalho autoral do grupo (`Documentos_Para_Desenv_TCC/TCC - C D H M (TC2).docx`) nem a documentação técnica consolidada (`docs/documentacao_projeto.md`). Reúne, em formato acadêmico ABNT e em Português-Brasil, a redação dos capítulos espelhando a estrutura do TC2, com os números efetivamente apurados no núcleo prático e com a análise exploratória complementar do recorte intramunicipal por distrito.
 >
 > **Posicionamento (inegociável).** Este é um **protótipo acadêmico** de apoio à visualização, análise exploratória e previsão de dados epidemiológicos. Não é ferramenta oficial de vigilância, não substitui plataformas governamentais e não comprova melhoria direta em decisões de saúde pública. Todas as afirmações de resultado possuem evidência (métrica, tabela, gráfico ou teste).
+>
+> **Material de estudo complementar.** Guia didático das técnicas e decisões técnicas do núcleo prático (para estudo e defesa de banca): [`docs/tcc/guia_estudo_tecnicas.md`](guia_estudo_tecnicas.md).
 
 ---
 
