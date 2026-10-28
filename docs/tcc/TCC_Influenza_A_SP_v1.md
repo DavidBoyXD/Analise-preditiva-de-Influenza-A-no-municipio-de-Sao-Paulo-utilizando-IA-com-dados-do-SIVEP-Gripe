@@ -269,7 +269,7 @@ Convém distinguir os dois percentuais citados, pois têm denominadores diferent
 
 **Densidade comparada entre as séries.** A série de Dengue reúne 782 semanas, nenhuma delas com zero casos, operando em escala de milhares de casos por semana (mínimo de 38, máximo de 85.389 e média de 2.188,86). A série oficial de Influenza A reúne 832 semanas, das quais 242 são ignoradas no cálculo do MAPE por não terem casos positivos, e opera em escala de dezenas de casos por semana. Daí uma ressalva explícita: os erros absolutos (MAE e RMSE) NÃO são comparáveis entre as duas doenças, porque medem grandezas de magnitudes muito diferentes. A comparação válida é sempre relativa dentro de cada série (cada modelo frente ao seu próprio baseline) e por meio de métricas adimensionais (sMAPE e acerto direcional) e dos testes de significância.
 
-**Resultados reais na série de Dengue.** A Tabela 4 reúne as métricas obtidas na Dengue sob o mesmo protocolo walk-forward de origem expansiva (horizonte de 6 semanas, janela mínima de 60 semanas, 121 blocos e 722 pontos de teste). Os valores foram conferidos contra [`docs/tcc/validacao_dengue/metricas_dengue.csv`](validacao_dengue/metricas_dengue.md).
+**Resultados reais na série de Dengue.** A Tabela 4 reúne as métricas obtidas na Dengue sob o mesmo protocolo walk-forward de origem expansiva (horizonte de 6 semanas, janela mínima de 60 semanas, 121 blocos e 722 pontos de teste). Os valores foram conferidos contra [`docs/tcc/validacao_dengue/metricas_dengue.csv`](validacao_dengue/metricas_dengue.csv).
 
 **Tabela 4: Métricas comparativas dos modelos na série de Dengue (experimento de validação).**
 
