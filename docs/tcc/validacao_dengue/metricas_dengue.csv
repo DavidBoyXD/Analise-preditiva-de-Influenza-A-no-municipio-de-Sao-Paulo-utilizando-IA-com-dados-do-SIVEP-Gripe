@@ -1,0 +1,5 @@
+modelo,mae,rmse,mape_semanas_positivas,smape,acerto_direcional,semanas_ignoradas_mape,dm_estatistica,dm_p_valor,dm_significativo,wilcoxon_p_valor,wilcoxon_significativo
+baseline,2147.4285,9997.5144,109.89,35.4869,0.6519,0,-0.9262,0.3547,nao,0.0,sim
+random_forest,1388.2715,6467.8756,46.9795,17.8855,0.613,0,(referencia),,,,
+sarima,1310.7079,7092.0996,43.7522,22.2946,0.5548,0,-0.3826,0.7022,nao,0.0169,sim
+prophet,2401.6853,9301.6517,179.9007,53.5398,0.484,0,-0.9146,0.3607,nao,0.0,sim

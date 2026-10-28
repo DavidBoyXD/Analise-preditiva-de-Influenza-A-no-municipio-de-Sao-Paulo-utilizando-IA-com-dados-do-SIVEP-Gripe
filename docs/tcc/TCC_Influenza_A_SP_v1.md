@@ -259,6 +259,50 @@ Convém distinguir os dois percentuais citados, pois têm denominadores diferent
 
 **Enquadramento de utilidade (hipótese de aplicação futura).** Por medir carga assistencial por hospital, o recorte poderia, no futuro e após validação adicional, auxiliar o público a identificar unidades com menor volume de casos em determinado momento, evitando ambientes de maior risco de exposição. Esse uso é apresentado como hipótese de aplicação futura, não como recomendação oficial de saúde nem como impacto comprovado.
 
+### 5.4 Validação exploratória da metodologia em uma segunda série (Dengue)
+
+**Enquadramento (experimento isolado, fora do escopo oficial).** Esta subseção relata um experimento exploratório de validação da metodologia, conduzido de forma deliberadamente isolada do núcleo oficial. O objeto oficial do trabalho permanece a Influenza A no município de São Paulo; a Dengue não integra esse objeto e entra apenas como uma segunda série temporal de teste. O experimento não reaproveita o modelo serializado, o banco de dados nem a API oficiais: ele apenas reaplica o MESMO pipeline metodológico (engenharia de atributos temporais, protocolo walk-forward, conjunto de métricas e testes de significância) a uma série independente, para observar o comportamento do método sob outra densidade de dados.
+
+**Motivação.** A série de Influenza A analisada no núcleo prático é curta e esparsa, com grande número de semanas sem casos, o que limita o poder dos modelos e dos testes estatísticos. Surge, então, uma pergunta metodológica legítima: o mesmo método se comporta de modo diferente diante de uma série mais longa e densa? A Dengue no município de São Paulo oferece exatamente esse contraste, por ser uma série semanal extensa, sem semanas zeradas e com forte presença de surtos. Rodar o pipeline sem adaptação nessa série permite verificar se o desempenho relativo melhora quando há mais dados.
+
+**Fonte dos dados.** Os dados de Dengue vêm do InfoDengue (FGV e Fiocruz), por sua API pública (endpoint alertcity), para o município de São Paulo (código IBGE 3550308), em granularidade semanal (semana epidemiológica), cobrindo o período de 2010 a 2024. A extração foi datada de 28 de outubro de 2026, e os parâmetros completos da consulta estão registrados na ficha de rastreabilidade versionada em [`docs/tcc/validacao_dengue/`](validacao_dengue/README.md). O endereço público da fonte é [https://info.dengue.mat.br/](https://info.dengue.mat.br/).
+
+**Densidade comparada entre as séries.** A série de Dengue reúne 782 semanas, nenhuma delas com zero casos, operando em escala de milhares de casos por semana (mínimo de 38, máximo de 85.389 e média de 2.188,86). A série oficial de Influenza A reúne 832 semanas, das quais 242 são ignoradas no cálculo do MAPE por não terem casos positivos, e opera em escala de dezenas de casos por semana. Daí uma ressalva explícita: os erros absolutos (MAE e RMSE) NÃO são comparáveis entre as duas doenças, porque medem grandezas de magnitudes muito diferentes. A comparação válida é sempre relativa dentro de cada série (cada modelo frente ao seu próprio baseline) e por meio de métricas adimensionais (sMAPE e acerto direcional) e dos testes de significância.
+
+**Resultados reais na série de Dengue.** A Tabela 4 reúne as métricas obtidas na Dengue sob o mesmo protocolo walk-forward de origem expansiva (horizonte de 6 semanas, janela mínima de 60 semanas, 121 blocos e 722 pontos de teste). Os valores foram conferidos contra [`docs/tcc/validacao_dengue/metricas_dengue.csv`](validacao_dengue/metricas_dengue.csv).
+
+**Tabela 4: Métricas comparativas dos modelos na série de Dengue (experimento de validação).**
+
+| Modelo | MAE | RMSE | sMAPE (%) | Acerto direcional |
+| ------ | --- | ---- | --------- | ----------------- |
+| baseline (sazonal-ingênuo) | 2147,43 | 9997,51 | 35,49 | 0,6519 |
+| random_forest | 1388,27 | 6467,88 | 17,89 | 0,6130 |
+| sarima | 1310,71 | 7092,10 | 22,29 | 0,5548 |
+| prophet | 2401,69 | 9301,65 | 53,54 | 0,4840 |
+
+Nesta série, o SARIMA obteve o menor MAE da tabela (1310,71) e o Prophet obteve o pior MAE (2401,69). O Random Forest ficou entre eles em MAE (1388,27), com o menor sMAPE (17,89%).
+
+**Significância estatística na Dengue (Random Forest como modelo de referência).** O teste de Diebold-Mariano do Random Forest frente a cada comparador resultou em: baseline com p igual a 0,3547 (não significativo); SARIMA com p igual a 0,7022 (não significativo); e Prophet com p igual a 0,3607 (não significativo). Já o teste de Wilcoxon sobre os erros absolutos resultou em: baseline com p igual a 0,0 (significativo); SARIMA com p igual a 0,0169 (significativo); e Prophet com p igual a 0,0 (significativo).
+
+**Leitura honesta (ponto central).** Na Dengue, diferentemente do que ocorre na Influenza A, o Random Forest PASSA a superar o baseline em MAE, RMSE e sMAPE, e o teste de Wilcoxon confirma essa vantagem com significância. Esse é um ganho real atribuível à maior densidade de dados. PORÉM, dois fatos impedem qualquer conclusão forte. Primeiro, o teste principal adotado no trabalho, o de Diebold-Mariano, continua NÃO significativo em AMBAS as séries: na Dengue, p igual a 0,3547 frente ao baseline; na Influenza A, p igual a 0,5117 frente ao baseline. Segundo, o SARIMA mantém o menor MAE também na Dengue, tal como ocorre na série oficial. A divergência entre os dois testes tem explicação metodológica: a série de Dengue é dominada por surtos explosivos, com picos muito superiores à média, e esses picos inflam a perda quadrática usada pelo Diebold-Mariano, reduzindo o poder do teste; o Wilcoxon, por operar sobre a mediana dos erros absolutos, capta o ganho do Random Forest na massa de erros típicos, menos sensível aos extremos. Não se trata de contradição, e sim de informação complementar: um teste mede a diferença média ponderada pelo quadrado do erro, o outro mede a diferença típica. A Tabela 5 contrasta os números das duas séries para tornar explícita essa leitura.
+
+**Tabela 5: Contraste entre a série oficial (Influenza A) e a série de validação (Dengue).**
+
+| Indicador | Influenza A (oficial) | Dengue (validação) |
+| --------- | --------------------- | ------------------ |
+| MAE do baseline | 8,28 | 2147,43 |
+| MAE do random_forest | 8,56 | 1388,27 |
+| MAE do sarima (menor MAE) | 7,51 | 1310,71 |
+| RF supera o baseline em MAE? | Não | Sim |
+| Diebold-Mariano RF frente a baseline | p igual a 0,5117 (não) | p igual a 0,3547 (não) |
+| Wilcoxon RF frente a baseline | significativo | significativo |
+
+Os valores da coluna de Influenza A reproduzem a Tabela 2 e os números oficiais de [`docs/metricas_modelos.md`](../metricas_modelos.md); as escalas de MAE das duas colunas não devem ser comparadas diretamente, pelo motivo já exposto.
+
+**Conclusão do experimento.** O pipeline mostrou-se robusto e portável: rodou sem adaptação sobre uma doença diferente, com dados em outra escala, e produziu resultados coerentes. A maior densidade de dados da Dengue melhorou o desempenho relativo do Random Forest, que passou a superar o baseline nas métricas de erro e no Wilcoxon. Isso NÃO garante, porém, vantagem no teste principal (Diebold-Mariano), que permanece não significativo nas duas séries, nem destrona o SARIMA no MAE. A leitura adequada é, portanto, de validação da robustez metodológica, sem exagero de conclusões: o método é consistente e transferível, o volume de dados ajuda, mas a superioridade estatística do modelo principal não fica demonstrada. O posicionamento de protótipo acadêmico é mantido, e a Dengue permanece fora do escopo oficial do trabalho.
+
+**Artefatos versionados.** Os artefatos deste experimento estão versionados neste repositório, para rastreabilidade e auditoria, na pasta [`docs/tcc/validacao_dengue/`](validacao_dengue/README.md): o relatório completo ([`RELATORIO_VALIDACAO_DENGUE.md`](validacao_dengue/RELATORIO_VALIDACAO_DENGUE.md)), a tabela de métricas ([`metricas_dengue.md`](validacao_dengue/metricas_dengue.md)), o gráfico real versus previsto ([`grafico_real_x_previsto_dengue.png`](validacao_dengue/grafico_real_x_previsto_dengue.png)) e o README de enquadramento ([`README.md`](validacao_dengue/README.md)). Os scripts em `validacao_dengue/scripts/` reaplicam a mesma metodologia usando os módulos do backend do próprio repositório, e a execução original ocorreu na área de investigação isolada, externa ao núcleo oficial.
+
 ---
 
 ## 6 Considerações finais
@@ -304,6 +348,8 @@ BRASIL. Ministério da Saúde. **CNES: Cadastro Nacional de Estabelecimentos de 
 BRASIL. **Lei nº 13.709, de 14 de agosto de 2018**: Lei Geral de Proteção de Dados Pessoais (LGPD). Brasília: Presidência da República, 2018.
 
 PREFEITURA DO MUNICÍPIO DE SÃO PAULO. **GeoSampa: mapa digital da cidade de São Paulo (camadas distrito_municipal e subprefeitura, via WFS)**. São Paulo: PMSP. Disponível em: [https://geosampa.prefeitura.sp.gov.br/](https://geosampa.prefeitura.sp.gov.br/). Acesso em: 1 out. 2026.
+
+FUNDAÇÃO GETÚLIO VARGAS; FUNDAÇÃO OSWALDO CRUZ. **InfoDengue: sistema de alerta de arboviroses baseado em dados públicos**. Disponível em: [https://info.dengue.mat.br/](https://info.dengue.mat.br/). Acesso em: 28 out. 2026.
 
 ### Literatura das técnicas empregadas
 
